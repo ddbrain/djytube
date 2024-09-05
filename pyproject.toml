@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "djytube"
+version = "0.1.7"
+description = "Easy youtube download for DJ's"
+authors = [
+    "patrick Cooley <https://github.com/ddbrain>",
+]
+readme = "README.md"
+license = "MIT"
+packages = [
+    { include = "installer"}
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+yt-dlp = "2024.8.6"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+# Creates python "binaries"
+[tool.poetry.scripts]
+djytube = 'installer.djytube:main'

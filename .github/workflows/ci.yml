@@ -1,0 +1,91 @@
+name: CI for YouTube Downloader
+
+on:
+    push:
+      paths:
+        - 'pyproject.toml'
+        - 'installer/**'
+        - 'tests/**'
+        - '.github/workflows/ci.yml'   # Include the workflow file itself
+      branches:
+        - main
+    pull_request:
+      paths:
+        - 'pyproject.toml'
+        - 'installer/**'
+        - 'tests/**'
+        - '.github/workflows/ci.yml'   # Include the workflow file itself
+      branches:
+        - main
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.10', 3.11, 3.12]
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Install pipx on Linux and macOS
+      - name: Install pipx (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pipx
+          python -m pipx ensurepath
+          export PATH="$HOME/.local/bin:$PATH"
+
+      # Install pipx on Windows
+      - name: Install pipx (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pipx
+          python -m pipx ensurepath
+          # Manually add pipx to PATH for Windows
+          $env:Path += ";$env:USERPROFILE\.local\bin"
+
+      # Install Poetry using pipx
+      - name: Install Poetry with pipx
+        run: |
+          pipx install poetry
+
+      # Install dependencies using Poetry
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      # Install ffmpeg on Linux and macOS
+      - name: Install ffmpeg (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          sudo apt-get update || true
+          sudo apt-get install -y ffmpeg || brew install ffmpeg
+
+      # Install ffmpeg on Windows using Chocolatey
+      - name: Install ffmpeg (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install ffmpeg -y
+
+      # Add YouTube cookies from secrets (optional, if using cookies for tests)
+      # - name: Add cookies for YouTube
+      #   run: echo "${{ secrets.YOUTUBE_COOKIES }}" > cookies.txt
+
+      # Run tests
+      - name: Run tests
+        run: |
+          poetry run pytest -s

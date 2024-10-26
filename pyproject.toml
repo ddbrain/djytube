@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "djytube"
-version = "0.1.7"
+version = "0.1.8"
 description = "Easy youtube download for DJ's"
 authors = [
     "patrick Cooley <https://github.com/ddbrain>",

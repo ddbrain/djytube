@@ -51,31 +51,31 @@ def download_video(youtube_url, output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    # yt-dlp options, including specifying the output directory
+    # yt-dlp options, specifying output directory and file format
     ydl_opts = {
-        'format': 'bv[height<=1080][ext=mp4]+ba[ext=m4a]/best[ext=mp4]/best',
+        'format': 'bv[height<=1080][ext=mp4]+ba[ext=m4a]/best[ext=mp4]/best',  # Ensure video and audio are merged into mp4
         'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),  # Save the file in the specified directory
     }
 
     try:
-        downloaded_file = None  # Placeholder to store the actual downloaded file path
-        
-        # Define a hook to capture the file path once the download is complete
+        downloaded_file = None  # Placeholder to store the actual downloaded and merged .mp4 file path
+
+        # Define a hook to capture the .mp4 file path once the download and merging is complete
         def ydl_hook(d):
             nonlocal downloaded_file
-            if d['status'] == 'finished':
-                downloaded_file = d['filename']  # Capture the filename
+            if d['status'] == 'finished' and d['filename'].endswith('.mp4'):
+                downloaded_file = d['filename']  # Capture the final .mp4 filename
 
         # Add the hook to options
         ydl_opts['progress_hooks'] = [ydl_hook]
 
-        # Perform the download
+        # Perform the download and merging
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([youtube_url])
 
-        # Check if the downloaded file was captured
+        # Check if the merged .mp4 file was captured
         if downloaded_file:
-            # Convert the downloaded video to H.264 codec using ffmpeg
+            # Convert the final .mp4 file to H.264 codec
             h264_output_file = downloaded_file.replace('.mp4', '_h264.mp4')
             conversion_command = f'ffmpeg -i "{downloaded_file}" -c:v libx264 -c:a aac "{h264_output_file}"'
             
@@ -85,13 +85,12 @@ def download_video(youtube_url, output_dir):
             except subprocess.CalledProcessError:
                 print('Error: Failed to convert the video to H.264 format.')
         else:
-            print("Error: Downloaded file path could not be determined.")
+            print("Error: Downloaded .mp4 file path could not be determined.")
 
     except yt_dlp.utils.DownloadError as e:
         print(f"Error: Failed to download the video. The video may not be available, or the URL is incorrect.")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
-
 
 def download_low_quality_video(youtube_url, output_dir):
     """Download the YouTube video in the lowest quality using yt-dlp."""

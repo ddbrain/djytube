@@ -58,19 +58,34 @@ def download_video(youtube_url, output_dir):
     }
 
     try:
+        downloaded_file = None  # Placeholder to store the actual downloaded file path
+        
+        # Define a hook to capture the file path once the download is complete
+        def ydl_hook(d):
+            nonlocal downloaded_file
+            if d['status'] == 'finished':
+                downloaded_file = d['filename']  # Capture the filename
+
+        # Add the hook to options
+        ydl_opts['progress_hooks'] = [ydl_hook]
+
+        # Perform the download
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([youtube_url])
-            downloaded_file = ydl_opts['outtmpl']  # The path of the downloaded file
 
-        # Convert the downloaded video to H.264 codec using ffmpeg
-        h264_output_file = downloaded_file.replace('.%(ext)s', '_h264.mp4')
-        conversion_command = f'ffmpeg -i "{downloaded_file}" -c:v libx264 -c:a aac "{h264_output_file}"'
-        
-        try:
-            subprocess.run(conversion_command, shell=True, check=True)
-            print(f'Video successfully converted to H.264 format: {h264_output_file}')
-        except subprocess.CalledProcessError:
-            print('Error: Failed to convert the video to H.264 format.')
+        # Check if the downloaded file was captured
+        if downloaded_file:
+            # Convert the downloaded video to H.264 codec using ffmpeg
+            h264_output_file = downloaded_file.replace('.mp4', '_h264.mp4')
+            conversion_command = f'ffmpeg -i "{downloaded_file}" -c:v libx264 -c:a aac "{h264_output_file}"'
+            
+            try:
+                subprocess.run(conversion_command, shell=True, check=True)
+                print(f'Video successfully converted to H.264 format: {h264_output_file}')
+            except subprocess.CalledProcessError:
+                print('Error: Failed to convert the video to H.264 format.')
+        else:
+            print("Error: Downloaded file path could not be determined.")
 
     except yt_dlp.utils.DownloadError as e:
         print(f"Error: Failed to download the video. The video may not be available, or the URL is incorrect.")

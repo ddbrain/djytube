@@ -7,7 +7,7 @@ import subprocess
 import platform
 import shutil
 
-VERSION = "0.1.7"
+VERSION = "0.1.8"
 
 # Regular expression pattern to check if the input URL is a valid YouTube URL
 YOUTUBE_URL_PATTERN = re.compile(r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/.+')

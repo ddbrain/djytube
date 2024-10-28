@@ -73,10 +73,13 @@ def download_video(youtube_url, output_dir):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([youtube_url])
 
+        with yt_dlp.YoutubeDL() as ydl2:
+            info_dict = ydl.extract_info(youtube_url, download=False)
+            output_filename = ydl2.prepare_filename(info_dict)
+            downloaded_file = output_filename
+        
         # Check if the merged .mp4 file was captured
         if downloaded_file:
-            new_file = downloaded_file.split(".f614")
-            downloaded_file = new_file[0] + ".mp4"
             # Convert the final .mp4 file to H.264 codec
             h264_output_file = downloaded_file.replace('.mp4', '_h264.mp4')
             conversion_command = f'ffmpeg -i "{downloaded_file}" -c:v libx264 -c:a aac "{h264_output_file}"'

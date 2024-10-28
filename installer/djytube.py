@@ -71,12 +71,7 @@ def download_video(youtube_url, output_dir):
 
         # Perform the download and merging
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([youtube_url])
-
-        with yt_dlp.YoutubeDL() as ydl2:
-            info_dict = ydl.extract_info(youtube_url, download=False)
-            output_filename = ydl2.prepare_filename(info_dict)
-            downloaded_file = output_filename
+            downloaded_file = subprocess.getoutput(ydl.download([youtube_url]))
         
         # Check if the merged .mp4 file was captured
         if downloaded_file:

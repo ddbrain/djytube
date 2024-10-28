@@ -90,7 +90,9 @@ def download_video(youtube_url, output_dir):
         
         # Check if the merged .mp4 file was captured
         if downloaded_file:
-            codec_check_cmd = f"ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '{downloaded_file}'"
+            # Properly escape the filename for the ffprobe command
+            safe_filename = shlex.quote(downloaded_file)
+            codec_check_cmd = f"ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '{safe_filename}'"
             codec = subprocess.check_output(codec_check_cmd, shell=True).decode().strip()
             
             if codec == 'h264':
@@ -98,7 +100,7 @@ def download_video(youtube_url, output_dir):
             else:
                 # Convert the final .mp4 file to H.264 codec if not already in H.264
                 h264_output_file = downloaded_file.replace('.mp4', '_h264.mp4')
-                conversion_command = f'ffmpeg -i "{downloaded_file}" -c:v libx264 -c:a aac "{h264_output_file}"'
+                conversion_command = f'ffmpeg -i "{safe_filename}" -c:v libx264 -c:a aac "{h264_output_file}"'
             
                 try:
                     subprocess.run(conversion_command, shell=True, check=True)

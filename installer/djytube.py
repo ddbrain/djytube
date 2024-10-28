@@ -7,7 +7,7 @@ import subprocess
 import platform
 import shutil
 
-VERSION = "0.1.8"
+VERSION = "0.2.0"
 
 # Regular expression pattern to check if the input URL is a valid YouTube URL
 YOUTUBE_URL_PATTERN = re.compile(r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/.+')
@@ -131,7 +131,7 @@ def download_low_quality_video(youtube_url, output_dir):
 def main():
     """Main function to handle command-line arguments and initiate the download process."""
     parser = argparse.ArgumentParser(description='Download videos from YouTube formatted for DJs.')
-    parser.add_argument('url', type=str, help='The YouTube URL of the video to download')
+    parser.add_argument('url', type=str, nargs='?', help='The YouTube URL of the video to download (if not using -f/--file)')
 
     # Add multiple options for version
     parser.add_argument(
@@ -149,6 +149,13 @@ def main():
         help='Specify the output directory where the downloaded video will be saved'
     )
 
+    # New argument for file input
+    parser.add_argument(
+        '-f', '--file',
+        type=str,
+        help='Path to a text file containing YouTube URLs to download, one per line'
+    )
+
     # Parse the command-line arguments
     args = parser.parse_args()
 
@@ -157,13 +164,29 @@ def main():
         install_ffmpeg()
         sys.exit("ffmpeg is required for video conversion. Please install it and try again.")
 
-    # Validate the YouTube URL
-    if not is_valid_youtube_url(args.url):
-        sys.exit("Error: The provided URL is not a valid YouTube URL.")
+    # Determine the mode of processing based on the presence of -f/--file
+    if args.file:
+        # Bulk processing with file
+        try:
+            with open(args.file, 'r') as url_file:
+                urls = [line.strip() for line in url_file if line.strip()]
+        except FileNotFoundError:
+            print(f"Error: The file '{args.file}' was not found.")
+            sys.exit(1)
+    elif args.url:
+        # Single URL processing
+        urls = [args.url]
+    else:
+        # Neither file nor single URL provided
+        print("Error: Please provide a YouTube URL or use -f/--file to specify a file with URLs.")
+        sys.exit(1)
 
-    # Download the video and convert it to H.264
-    download_video(args.url, args.output)
-
+    # Process each URL
+    for url in urls:
+        if not is_valid_youtube_url(url):
+            print(f"Skipping invalid YouTube URL: {url}")
+            continue
+        download_video(url, args.output)
 
 if __name__ == "__main__":
     main()

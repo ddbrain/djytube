@@ -75,7 +75,7 @@ def download_video(youtube_url, output_dir):
 
         # Check if the merged .mp4 file was captured
         if downloaded_file:
-            new_file = downloaded_file.split("_")
+            new_file = downloaded_file.split(".f614")
             downloaded_file = new_file[0]
             # Convert the final .mp4 file to H.264 codec
             h264_output_file = downloaded_file.replace('.mp4', '_h264.mp4')

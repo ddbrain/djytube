@@ -53,7 +53,7 @@ def download_video(youtube_url, output_dir):
 
     # yt-dlp options, specifying output directory and file format
     ydl_opts = {
-        'format': 'bv[height<=1080][ext=mp4]+ba[ext=m4a]/best[ext=mp4]/best',  # Ensure video and audio are merged into mp4
+        'format': 'bv[height<=1080][vcodec=avc1][ext=mp4]+ba[ext=m4a]/bv[height<=1080][ext=mp4]+ba[ext=m4a]/best[ext=mp4]/best',  # Ensure video and audio are merged into mp4
         'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),  # Save the file in the specified directory
     }
 
@@ -90,15 +90,21 @@ def download_video(youtube_url, output_dir):
         
         # Check if the merged .mp4 file was captured
         if downloaded_file:
-            # Convert the final .mp4 file to H.264 codec
-            h264_output_file = downloaded_file.replace('.mp4', '_h264.mp4')
-            conversion_command = f'ffmpeg -i "{downloaded_file}" -c:v libx264 -c:a aac "{h264_output_file}"'
+            codec_check_cmd = f"ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '{downloaded_file}'"
+            codec = subprocess.check_output(codec_check_cmd, shell=True).decode().strip()
             
-            try:
-                subprocess.run(conversion_command, shell=True, check=True)
-                print(f'Video successfully converted to H.264 format: {h264_output_file}')
-            except subprocess.CalledProcessError:
-                print('Error: Failed to convert the video to H.264 format.')
+            if codec == 'h264':
+                print(f"Video is already in H.264 format: {downloaded_file}")
+            else:
+                # Convert the final .mp4 file to H.264 codec if not already in H.264
+                h264_output_file = downloaded_file.replace('.mp4', '_h264.mp4')
+                conversion_command = f'ffmpeg -i "{downloaded_file}" -c:v libx264 -c:a aac "{h264_output_file}"'
+            
+                try:
+                    subprocess.run(conversion_command, shell=True, check=True)
+                    print(f'Video successfully converted to H.264 format: {h264_output_file}')
+                except subprocess.CalledProcessError:
+                    print('Error: Failed to convert the video to H.264 format.')
         else:
             print("Error: Downloaded .mp4 file path could not be determined.")
 

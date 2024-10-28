@@ -53,7 +53,7 @@ def download_video(youtube_url, output_dir):
 
     # yt-dlp options, specifying output directory and file format
     ydl_opts = {
-        'format': 'bestvideo[vcodec=avc1][height<=1080]+bestaudio/best[vcodec=avc1]/best',  # Ensure video and audio are merged into mp4
+        'format': '137+141/137+140/137+251/bestvideo[vcodec=avc1]+bestaudio/best',  # Ensure video and audio are merged into mp4
         'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),  # Save the file in the specified directory
     }
 

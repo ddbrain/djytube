@@ -6,6 +6,7 @@ import os
 import subprocess
 import platform
 import shutil
+import shlex
 
 VERSION = "0.2.1"
 

@@ -60,7 +60,7 @@ def download_video(youtube_url, output_dir):
     ydl_opts2 = {
         'outtmpl': '%(title)s.mp4',  # Output template
         'simulate': True,            # Only simulate to print info without downloading
-        'forcefilename': True        # Force to print the filename
+        'forcefilename': True,        # Force to print the filename
         'postprocessors': [{
             'key': 'FFmpegVideoConvertor',
             'preferedformat': 'mp4'      # Ensures the output is always .mp4

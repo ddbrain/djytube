@@ -61,6 +61,10 @@ def download_video(youtube_url, output_dir):
         'outtmpl': '%(title)s.mp4',  # Output template
         'simulate': True,            # Only simulate to print info without downloading
         'forcefilename': True        # Force to print the filename
+        'postprocessors': [{
+            'key': 'FFmpegVideoConvertor',
+            'preferedformat': 'mp4'      # Ensures the output is always .mp4
+        }]
     }
 
     try:
@@ -81,7 +85,8 @@ def download_video(youtube_url, output_dir):
 
         with yt_dlp.YoutubeDL(ydl_opts2) as ydl2:
             info = ydl2.extract_info(youtube_url, download=False)
-            downloaded_file = ydl.prepare_filename(info)
+            # Manually adjust the filename to .mp4
+            downloaded_file = ydl.prepare_filename(info).rsplit(".", 1)[0] + ".mp4"
         
         # Check if the merged .mp4 file was captured
         if downloaded_file:

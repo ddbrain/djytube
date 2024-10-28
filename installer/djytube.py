@@ -73,7 +73,7 @@ def download_video(youtube_url, output_dir):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([youtube_url])
 
-          downloaded_file = subprocess.getoutput('yt_dlp.YoutubeDL --print filename -o "%(title)s.mp4"')
+        downloaded_file = subprocess.getoutput('yt_dlp.YoutubeDL --print filename -o "%(title)s.mp4"')
         
         # Check if the merged .mp4 file was captured
         if downloaded_file:
